@@ -6,18 +6,17 @@
 {% endblock %}
 
 {% block content %}
-<!-- Month/Year filter -->
-<form method="get" style="display:flex;gap:10px;align-items:center;margin-bottom:24px">
+<form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:24px">
   <select name="month" class="filter-select" onchange="this.form.submit()">
-    <option value="1" {% if month == 1 %}selected{% endif %}>January</option>
-    <option value="2" {% if month == 2 %}selected{% endif %}>February</option>
-    <option value="3" {% if month == 3 %}selected{% endif %}>March</option>
-    <option value="4" {% if month == 4 %}selected{% endif %}>April</option>
-    <option value="5" {% if month == 5 %}selected{% endif %}>May</option>
-    <option value="6" {% if month == 6 %}selected{% endif %}>June</option>
-    <option value="7" {% if month == 7 %}selected{% endif %}>July</option>
-    <option value="8" {% if month == 8 %}selected{% endif %}>August</option>
-    <option value="9" {% if month == 9 %}selected{% endif %}>September</option>
+    <option value="1"  {% if month == 1  %}selected{% endif %}>January</option>
+    <option value="2"  {% if month == 2  %}selected{% endif %}>February</option>
+    <option value="3"  {% if month == 3  %}selected{% endif %}>March</option>
+    <option value="4"  {% if month == 4  %}selected{% endif %}>April</option>
+    <option value="5"  {% if month == 5  %}selected{% endif %}>May</option>
+    <option value="6"  {% if month == 6  %}selected{% endif %}>June</option>
+    <option value="7"  {% if month == 7  %}selected{% endif %}>July</option>
+    <option value="8"  {% if month == 8  %}selected{% endif %}>August</option>
+    <option value="9"  {% if month == 9  %}selected{% endif %}>September</option>
     <option value="10" {% if month == 10 %}selected{% endif %}>October</option>
     <option value="11" {% if month == 11 %}selected{% endif %}>November</option>
     <option value="12" {% if month == 12 %}selected{% endif %}>December</option>
@@ -27,11 +26,12 @@
     <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
     {% endfor %}
   </select>
-  <span style="color:var(--text2);font-size:14px">Showing budgets for {{ month_name }} {{ year }}</span>
+  <span style="color:var(--text2);font-size:14px">{{ month_name }} {{ year }}</span>
 </form>
 
 {% if budgets %}
 <div class="grid-2">
+  {% for b in budgets %}
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:10px">
@@ -46,23 +46,40 @@
         <a href="{% url 'budget_delete' b.pk %}" class="btn btn-danger btn-sm">🗑️</a>
       </div>
     </div>
+
     <div style="display:flex;justify-content:space-between;margin-bottom:8px">
       <span style="font-size:13px;color:var(--text2)">Spent</span>
       <span style="font-family:var(--font-m);font-size:13px">
-        <span style="color:{% if b.percentage >= 100 %}var(--red){% elif b.percentage >= 80 %}var(--gold){% else %}var(--green){% endif %}">{{ currency }} {{ b.spent|floatformat:2 }}</span>
+        {% if b.percentage >= 100 %}
+          <span style="color:var(--red)">{{ currency }} {{ b.spent|floatformat:2 }}</span>
+        {% elif b.percentage >= 80 %}
+          <span style="color:var(--gold)">{{ currency }} {{ b.spent|floatformat:2 }}</span>
+        {% else %}
+          <span style="color:var(--green)">{{ currency }} {{ b.spent|floatformat:2 }}</span>
+        {% endif %}
         <span style="color:var(--text3)"> / {{ currency }} {{ b.amount|floatformat:2 }}</span>
       </span>
     </div>
+
     <div class="progress-bar">
-      <div class="progress-fill {% if b.percentage >= 100 %}red{% elif b.percentage >= 80 %}gold{% endif %}"
-           style="width:{{ b.percentage }}%"></div>
+      {% if b.percentage >= 100 %}
+        <div class="progress-fill red" style="width:100%"></div>
+      {% elif b.percentage >= 80 %}
+        <div class="progress-fill gold" style="width:{{ b.percentage }}%"></div>
+      {% else %}
+        <div class="progress-fill" style="width:{{ b.percentage }}%"></div>
+      {% endif %}
     </div>
+
     <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px">
       <span style="color:var(--text2)">{{ b.percentage }}% used</span>
-      <span style="color:{% if b.remaining >= 0 %}var(--green){% else %}var(--red){% endif %}">
-        {% if b.remaining >= 0 %}{{ currency }} {{ b.remaining|floatformat:2 }} left{% else %}{{ currency }} {{ b.remaining|floatformat:2|slice:"1:" }} over budget{% endif %}
-      </span>
+      {% if b.remaining >= 0 %}
+        <span style="color:var(--green)">{{ currency }} {{ b.remaining|floatformat:2 }} left</span>
+      {% else %}
+        <span style="color:var(--red)">Over budget</span>
+      {% endif %}
     </div>
+
     {% if b.percentage >= 100 %}
     <div class="alert alert-danger" style="margin-top:12px;margin-bottom:0;padding:10px 14px;font-size:13px">
       🚨 Budget exceeded!
@@ -75,6 +92,7 @@
   </div>
   {% endfor %}
 </div>
+
 {% else %}
 <div class="card" style="text-align:center;padding:60px">
   <div style="font-size:48px;margin-bottom:16px">🎯</div>
