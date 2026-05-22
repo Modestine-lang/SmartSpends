@@ -6,6 +6,7 @@ from django.db.models import Sum, Count, Q
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.db import transaction as db_transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Transaction, Category, Budget, UserProfile
@@ -30,12 +31,16 @@ def register_view(request):
         return redirect('dashboard')
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()
-        _seed_default_categories(user)
-        UserProfile.objects.get_or_create(user=user)
-        login(request, user)
-        messages.success(request, 'Welcome to SmartSpend!')
-        return redirect('dashboard')
+        try:
+            with db_transaction.atomic():
+                user = form.save()
+                UserProfile.objects.get_or_create(user=user)
+                _seed_default_categories(user)
+            login(request, user)
+            messages.success(request, 'Welcome to SmartSpend!')
+            return redirect('dashboard')
+        except Exception as e:
+            messages.error(request, f'Registration failed: {e}')
     return render(request, 'auth/register.html', {'form': form})
 
 
@@ -383,7 +388,7 @@ def settings_view(request):
     return render(request, 'settings.html', {'form': form, 'profile': profile})
 
 
-
+def _seed_default_categories(user):
     defaults = [
         ('Food', '🍔', '#ff6b6b'),
         ('Transport', '🚗', '#4ecdc4'),

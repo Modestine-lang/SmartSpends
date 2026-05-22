@@ -35,10 +35,8 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.get_or_create(user=instance)
 
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
+# Removed save_user_profile signal — it caused crashes on registration
+# by trying to save a profile that doesn't exist yet during user creation.
 
 
 
@@ -60,8 +58,8 @@ class Category(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
     name = models.CharField(max_length=100)
-    icon = models.CharField(max_length=10, default='📦')
-    color = models.CharField(max_length=20, default='#00ff88')
+    icon = models.CharField(max_length=20, default='📦')
+    color = models.CharField(max_length=30, default='#00ff88')
     is_custom = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
