@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Delete — SmartSpend{% endblock %}
+{% block page_title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div style="max-width:480px">
+  <div class="card" style="text-align:center;padding:40px">
+    <div style="font-size:48px;margin-bottom:20px">🗑️</div>
+    <h2 style="font-family:var(--font-d);font-size:22px;margin-bottom:12px">Delete {{ type|capfirst }}?</h2>
+    <p style="color:var(--text2);margin-bottom:8px">
+      You are about to delete <strong style="color:var(--text)">{{ obj }}</strong>.
+    </p>
+    <p style="color:var(--text3);font-size:13px;margin-bottom:32px">This action cannot be undone.</p>
+    <form method="post" style="display:flex;gap:12px;justify-content:center">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Yes, Delete</button>
+      <a href="javascript:history.back()" class="btn btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

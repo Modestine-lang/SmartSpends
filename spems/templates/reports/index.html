@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Reports — SmartSpend{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'export_csv' %}?month={{ month }}&year={{ year }}" class="btn btn-secondary btn-sm">⬇️ CSV</a>
+<a href="{% url 'export_pdf' %}?month={{ month }}&year={{ year }}" class="btn btn-secondary btn-sm">📄 PDF</a>
+{% endblock %}
+
+{% block content %}
+<!-- Month/Year selector -->
+<form method="get" style="display:flex;gap:10px;align-items:center;margin-bottom:24px">
+  <select name="month" class="filter-select" onchange="this.form.submit()">
+    <option value="1" {% if month == 1 %}selected{% endif %}>January</option>
+    <option value="2" {% if month == 2 %}selected{% endif %}>February</option>
+    <option value="3" {% if month == 3 %}selected{% endif %}>March</option>
+    <option value="4" {% if month == 4 %}selected{% endif %}>April</option>
+    <option value="5" {% if month == 5 %}selected{% endif %}>May</option>
+    <option value="6" {% if month == 6 %}selected{% endif %}>June</option>
+    <option value="7" {% if month == 7 %}selected{% endif %}>July</option>
+    <option value="8" {% if month == 8 %}selected{% endif %}>August</option>
+    <option value="9" {% if month == 9 %}selected{% endif %}>September</option>
+    <option value="10" {% if month == 10 %}selected{% endif %}>October</option>
+    <option value="11" {% if month == 11 %}selected{% endif %}>November</option>
+    <option value="12" {% if month == 12 %}selected{% endif %}>December</option>
+  </select>
+  <select name="year" class="filter-select" onchange="this.form.submit()">
+    {% for y in years %}
+    <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
+    {% endfor %}
+  </select>
+  <span style="color:var(--text2);font-size:14px">{{ month_name }} {{ year }}</span>
+</form>
+
+<!-- Summary cards -->
+<div class="grid-3" style="margin-bottom:24px">
+  <div class="stat-card green">
+    <div class="stat-icon">💰</div>
+    <div class="stat-label">Total Income</div>
+    <div class="stat-value">{{ currency }} {{ total_income|floatformat:2 }}</div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-icon">💸</div>
+    <div class="stat-label">Total Expenses</div>
+    <div class="stat-value">{{ currency }} {{ total_expense|floatformat:2 }}</div>
+  </div>
+  <div class="stat-card {% if net >= 0 %}blue{% else %}red{% endif %}">
+    <div class="stat-icon">⚖️</div>
+    <div class="stat-label">Net Savings</div>
+    <div class="stat-value">{{ currency }} {{ net|floatformat:2 }}</div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="grid-2" style="margin-bottom:24px">
+  <div class="card">
+    <div class="card-header"><div class="card-title">Spending by Category</div></div>
+    {% if cat_labels != '[]' %}
+    <canvas id="catPie" height="260"></canvas>
+    {% else %}
+    <div style="text-align:center;padding:60px;color:var(--text2)">No expense data for this period</div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Weekly Spending Trend</div></div>
+    <canvas id="weekBar" height="260"></canvas>
+  </div>
+</div>
+
+<!-- Category breakdown table -->
+<div class="card">
+  <div class="card-header"><div class="card-title">Category Breakdown</div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Transactions</th>
+          <th>Total Spent</th>
+          <th>% of Expenses</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in by_category %}
+        <tr>
+          <td>{{ row.category__name|default:"Uncategorized" }}</td>
+          <td style="color:var(--text2)">{{ row.count }}</td>
+          <td style="font-family:var(--font-m);color:var(--red)">{{ currency }} {{ row.total|floatformat:2 }}</td>
+          <td>
+            {% if total_expense > 0 %}
+            {% widthratio row.total total_expense 100 %}%
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text2)">No expense data</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const catLabels = {{ cat_labels|safe }};
+if (catLabels.length) {
+  new Chart(document.getElementById('catPie'), {
+    type: 'doughnut',
+    data: {
+      labels: catLabels,
+      datasets: [{ data: {{ cat_values|safe }}, backgroundColor: {{ cat_colors|safe }}, borderWidth: 0, hoverOffset: 8 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'right', labels: { color: '#8896b0', font: { family: 'DM Sans' }, padding: 14 } } },
+      cutout: '60%'
+    }
+  });
+}
+
+new Chart(document.getElementById('weekBar'), {
+  type: 'bar',
+  data: {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    datasets: [{
+      label: 'Expenses',
+      data: {{ weekly_data|safe }},
+      backgroundColor: 'rgba(255,77,109,0.7)',
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#8896b0' } } },
+    scales: {
+      x: { ticks: { color: '#8896b0' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#8896b0' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+  }
+});
+</script>
+{% endblock %}

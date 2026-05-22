@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: smartspend
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn spems.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: spems.settings_prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: ""          # Render fills RENDER_EXTERNAL_HOSTNAME automatically
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+    disk:
+      name: spems-data
+      mountPath: /opt/render/project/src/spems
+      sizeGB: 1

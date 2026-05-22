@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — SmartSpend</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080c14;--bg2:#0d1420;--surface:#151e2e;--border:rgba(255,255,255,0.07);--green:#00ff88;--gold:#ffd700;--red:#ff4d6d;--text:#e8edf5;--text2:#8896b0;--text3:#4a5568;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.left{background:linear-gradient(135deg,#0a1628,#081020);display:flex;flex-direction:column;justify-content:center;padding:60px;position:relative;overflow:hidden}
+.left::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,255,136,0.08),transparent 70%);top:-200px;left:-200px}
+.logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--green);margin-bottom:60px;position:relative;z-index:1}
+.logo span{color:var(--gold)}
+.hero{position:relative;z-index:1}
+.hero h1{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;line-height:1.2;margin-bottom:20px}
+.hero h1 .hl{background:linear-gradient(135deg,var(--green),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--text2);font-size:15px;line-height:1.7;max-width:360px}
+.features{margin-top:40px;position:relative;z-index:1;display:flex;flex-direction:column;gap:14px}
+.feat{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text2)}
+.feat-icon{font-size:20px}
+.right{background:var(--bg2);display:flex;align-items:center;justify-content:center;padding:40px}
+.auth-card{width:100%;max-width:440px}
+.auth-card h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px}
+.auth-card .sub{color:var(--text2);font-size:14px;margin-bottom:28px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:7px}
+.form-group input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.form-group input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,255,136,0.1)}
+.field-error{font-size:12px;color:var(--red);margin-top:5px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;padding:13px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:none;background:var(--green);color:#000;transition:all .2s;margin-top:8px}
+.btn:hover{background:#00e67a;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,255,136,0.3)}
+.footer{text-align:center;margin-top:20px;font-size:13px;color:var(--text2)}
+.footer a{color:var(--green);text-decoration:none;font-weight:500}
+@media(max-width:768px){body{grid-template-columns:1fr}.left{display:none}}
+</style>
+</head>
+<body>
+<div class="left">
+  <div class="logo">Smart<span>Spend</span></div>
+  <div class="hero">
+    <h1>Start Managing Your<br><span class="hl">Money Smarter</span></h1>
+    <p>Join SmartSpend and take control of your personal finances with powerful tracking and insights.</p>
+    <div class="features">
+      <div class="feat"><span class="feat-icon">✅</span> Auto-categorization of transactions</div>
+      <div class="feat"><span class="feat-icon">✅</span> Monthly budget tracking & alerts</div>
+      <div class="feat"><span class="feat-icon">✅</span> Visual reports & charts</div>
+      <div class="feat"><span class="feat-icon">✅</span> CSV & PDF export</div>
+    </div>
+  </div>
+</div>
+<div class="right">
+  <div class="auth-card">
+    <h2>Create your account</h2>
+    <p class="sub">Free forever. No credit card needed.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" placeholder="John" required>
+          {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" placeholder="Doe" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" value="{{ form.username.value|default:'' }}" placeholder="johndoe" required>
+        {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="john@example.com" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password1" placeholder="••••••••" required>
+          {% if form.password1.errors %}<div class="field-error">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" name="password2" placeholder="••••••••" required>
+          {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+      <button type="submit" class="btn">Create Account →</button>
+    </form>
+    <div class="footer">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Settings — SmartSpend{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div style="max-width:560px">
+
+  <!-- Currency -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <div>
+        <div class="card-title">💱 Currency Preference</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">
+          Choose the currency symbol displayed throughout the app.
+          Amounts are stored as-is — this only changes the symbol shown.
+        </div>
+      </div>
+    </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Currency</label>
+        {{ form.currency }}
+      </div>
+      <!-- Live preview -->
+      <div id="preview" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:20px;font-size:14px;color:var(--text2)">
+        Preview: <span id="preview-sym" style="color:var(--green);font-family:var(--font-m);font-weight:600">{{ profile.currency }}</span><span style="color:var(--text);font-family:var(--font-m)"> 1,250.00</span>
+      </div>
+      <button type="submit" class="btn btn-primary">💾 Save Currency</button>
+    </form>
+  </div>
+
+  <!-- Account info (read-only) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👤 Account Info</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text2);font-size:14px">Full Name</span>
+        <span style="font-size:14px;font-weight:500">{{ request.user.get_full_name|default:"—" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text2);font-size:14px">Username</span>
+        <span style="font-size:14px;font-family:var(--font-m)">{{ request.user.username }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text2);font-size:14px">Email</span>
+        <span style="font-size:14px">{{ request.user.email|default:"—" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0">
+        <span style="color:var(--text2);font-size:14px">Member Since</span>
+        <span style="font-size:14px">{{ request.user.date_joined|date:"M d, Y" }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live preview when currency select changes
+document.querySelector('[name="currency"]').addEventListener('change', function() {
+  document.getElementById('preview-sym').textContent = this.value;
+});
+</script>
+{% endblock %}

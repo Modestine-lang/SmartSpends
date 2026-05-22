@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Transactions — SmartSpend{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'transaction_add' %}" class="btn btn-primary btn-sm">+ Add Transaction</a>
+{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <select name="type" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Types</option>
+      <option value="income" {% if filters.type == 'income' %}selected{% endif %}>Income</option>
+      <option value="expense" {% if filters.type == 'expense' %}selected{% endif %}>Expense</option>
+    </select>
+    <select name="category" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat.id }}" {% if filters.category == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="month" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Months</option>
+      <option value="1" {% if filters.month == '1' %}selected{% endif %}>January</option>
+      <option value="2" {% if filters.month == '2' %}selected{% endif %}>February</option>
+      <option value="3" {% if filters.month == '3' %}selected{% endif %}>March</option>
+      <option value="4" {% if filters.month == '4' %}selected{% endif %}>April</option>
+      <option value="5" {% if filters.month == '5' %}selected{% endif %}>May</option>
+      <option value="6" {% if filters.month == '6' %}selected{% endif %}>June</option>
+      <option value="7" {% if filters.month == '7' %}selected{% endif %}>July</option>
+      <option value="8" {% if filters.month == '8' %}selected{% endif %}>August</option>
+      <option value="9" {% if filters.month == '9' %}selected{% endif %}>September</option>
+      <option value="10" {% if filters.month == '10' %}selected{% endif %}>October</option>
+      <option value="11" {% if filters.month == '11' %}selected{% endif %}>November</option>
+      <option value="12" {% if filters.month == '12' %}selected{% endif %}>December</option>
+    </select>
+    <select name="year" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Years</option>
+      {% for y in years %}
+      <option value="{{ y }}" {% if filters.year == y|stringformat:'s' %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="q" value="{{ filters.q }}" placeholder="🔍 Search..." class="filter-select" style="min-width:180px">
+    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+    {% if filters.type or filters.category or filters.month or filters.year or filters.q %}
+    <a href="{% url 'transaction_list' %}" class="btn btn-ghost btn-sm">✕ Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td style="color:var(--text2);font-size:13px">{{ tx.date }}</td>
+          <td>
+            <div style="font-weight:500">{{ tx.description }}</div>
+            {% if tx.notes %}<div style="font-size:12px;color:var(--text2)">{{ tx.notes|truncatechars:50 }}</div>{% endif %}
+          </td>
+          <td>
+            {% if tx.category %}
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+              {{ tx.category.icon }} {{ tx.category.name }}
+            </span>
+            {% else %}<span style="color:var(--text3)">—</span>{% endif %}
+          </td>
+          <td>
+            <span class="badge {% if tx.type == 'income' %}badge-green{% else %}badge-red{% endif %}">
+              {{ tx.type|capfirst }}
+            </span>
+          </td>
+          <td>
+            <span style="font-family:var(--font-m);font-weight:500;color:{% if tx.type == 'income' %}var(--green){% else %}var(--red){% endif %}">
+              {% if tx.type == 'income' %}+{% else %}-{% endif %}{{ currency }} {{ tx.amount|floatformat:2 }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <a href="{% url 'transaction_edit' tx.pk %}" class="btn btn-ghost btn-sm">✏️</a>
+              <a href="{% url 'transaction_delete' tx.pk %}" class="btn btn-danger btn-sm">🗑️</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text2)">
+          No transactions found. <a href="{% url 'transaction_add' %}" style="color:var(--green)">Add your first one</a>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
